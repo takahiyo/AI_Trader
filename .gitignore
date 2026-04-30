@@ -1,0 +1,29 @@
+# 依存・キャッシュ
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# 環境変数（シークレット）
+.env
+
+# データキャッシュ
+data/cache/
+
+# 学習済みモデル（サイズ大）
+models/saved/*.onnx
+models/saved/*.h5
+models/saved/*.keras
+
+# ログ
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store

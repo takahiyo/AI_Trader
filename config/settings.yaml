@@ -1,0 +1,190 @@
+# ============================================================
+# AI_Trader 統合設定ファイル（SSOT）
+# 全てのパラメータはここで一元管理する
+# シークレット情報は環境変数から取得（${ENV_VAR}記法）
+# ============================================================
+
+# --- MT5接続設定 ---
+mt5:
+  terminal_path: "C:/Program Files/MetaTrader 5/terminal64.exe"
+  login: ${MT5_LOGIN}
+  password: ${MT5_PASSWORD}
+  server: ${MT5_SERVER}
+  timeout_ms: 10000
+  # 取引対象シンボル
+  symbols:
+    - "EURUSD"
+    - "USDJPY"
+    - "GBPUSD"
+
+# --- データ取得設定 ---
+data:
+  # HistData.com設定
+  histdata:
+    # HistDataはEST（DSTなし）固定。取得後UTCに変換する
+    source_timezone: "EST_NO_DST"
+    target_timezone: "UTC"
+    cache_dir: "data/cache"
+  # MT5リアルタイムデータ
+  realtime:
+    poll_interval_sec: 5
+  # タイムフレーム定義（リサンプリング対象）
+  timeframes:
+    - "1min"
+    - "5min"
+    - "15min"
+    - "1h"
+    - "4h"
+    - "1d"
+
+# --- 特徴量設定 ---
+features:
+  # 特徴量に使用する過去日数
+  lookback_days: 25
+  # テクニカル指標パラメータ
+  indicators:
+    ma_periods: [5, 25, 75, 200]
+    ichimoku:
+      tenkan: 9
+      kijun: 26
+      senkou_b: 52
+    bollinger:
+      period: 20
+      std_dev: 2.0
+    macd:
+      fast: 12
+      slow: 26
+      signal: 9
+    adx:
+      period: 14
+    rsi:
+      period: 14
+    atr:
+      period: 14
+
+# --- AIモデル設定 ---
+model:
+  # CNN設定
+  cnn:
+    filters: [32, 64, 128]
+    kernel_size: 3
+    pool_size: 2
+    dropout: 0.3
+  # LSTM設定
+  lstm:
+    units: [128, 64]
+    dropout: 0.3
+    recurrent_dropout: 0.2
+  # 学習設定
+  training:
+    epochs: 200
+    batch_size: 64
+    learning_rate: 0.001
+    early_stopping_patience: 20
+    validation_split: 0.2
+    l2_regularization: 0.001
+  # ONNX出力
+  onnx:
+    output_dir: "models/saved"
+    opset_version: 13
+
+# --- バックテスト設定 ---
+backtest:
+  # スプレッド（pips）
+  spread_pips: 1.5
+  # スリッページ（pips）
+  slippage_pips: 0.5
+  # CPCV設定
+  cpcv:
+    n_splits: 10
+    n_test_splits: 2
+    # エンバーゴ期間（指標の最大期間に合わせる）
+    embargo_days: 30
+    # パージング期間
+    purge_days: 5
+  # モンテカルロ設定
+  monte_carlo:
+    n_simulations: 10000
+    confidence_level: 0.99
+
+# --- リスク管理設定 ---
+risk:
+  # 1トレードあたりの最大リスク率（口座比率）
+  max_risk_per_trade: 0.005
+  # 最大同時ポジション数
+  max_open_positions: 3
+  # ATRベースエグジット
+  atr_exit:
+    # ストップロス = ATR × multiplier
+    sl_multiplier: 2.0
+    # テイクプロフィット = ATR × multiplier
+    tp_multiplier: 1.5
+  # バルサラ破産確率の許容上限（0%を目標）
+  max_ruin_probability: 0.0
+  # 最大ドローダウン許容率
+  max_drawdown_pct: 0.20
+  # スプレッド閾値（この値以上ならエントリー見送り）
+  max_spread_pips: 3.0
+
+# --- MTFフィルター設定 ---
+strategy:
+  # エントリー判断に使用する短期足
+  entry_timeframe: "5min"
+  # トレンドフィルターに使用する長期足
+  trend_timeframes:
+    - "4h"
+    - "1d"
+  # 順張りフィルター：長期トレンドと逆方向のエントリーを除外
+  trend_filter_enabled: true
+
+# --- 外部経済指標設定 ---
+economic_data:
+  fred:
+    api_key: ${FRED_API_KEY}
+    # 監視対象の経済指標
+    indicators:
+      - series_id: "DFF"
+        name: "Federal Funds Rate"
+      - series_id: "UNRATE"
+        name: "Unemployment Rate"
+      - series_id: "CPIAUCSL"
+        name: "CPI"
+  wbdata:
+    indicators:
+      - id: "FP.CPI.TOTL.ZG"
+        name: "Inflation Rate"
+
+# --- 監視・通知設定 ---
+monitoring:
+  # ヘルスチェック間隔（秒）
+  health_check_interval_sec: 30
+  # プロセス監視対象
+  watch_processes:
+    - "terminal64.exe"
+  # メモリ使用量閾値（MB）
+  memory_threshold_mb: 1500
+  # 通知設定
+  notification:
+    email:
+      enabled: false
+      smtp_server: ${SMTP_SERVER}
+      smtp_port: 587
+      sender: ${EMAIL_SENDER}
+      password: ${EMAIL_PASSWORD}
+      recipients:
+        - ${EMAIL_RECIPIENT}
+    # LINE通知（オプション）
+    line:
+      enabled: false
+      token: ${LINE_NOTIFY_TOKEN}
+
+# --- ログ設定 ---
+logging:
+  level: "INFO"
+  trade_log: "logs/trades.log"
+  error_log: "logs/errors.log"
+  system_log: "logs/system.log"
+  # ログローテーション
+  rotation:
+    max_bytes: 10485760  # 10MB
+    backup_count: 5
