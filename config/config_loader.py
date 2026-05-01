@@ -10,14 +10,21 @@ import os
 import re
 import yaml
 import logging
+import sys
 from pathlib import Path
 from typing import Any, Optional
 from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 
-# プロジェクトルートディレクトリ
-PROJECT_ROOT = Path(__file__).parent.parent.resolve()
+# プロジェクトルートディレクトリの定義（EXE化に対応）
+if getattr(sys, 'frozen', False):
+    # EXE実行時: EXEファイルが存在するディレクトリ
+    PROJECT_ROOT = Path(sys.executable).parent.resolve()
+else:
+    # 通常実行時: config_loader.py の 2つ上のディレクトリ
+    PROJECT_ROOT = Path(__file__).parent.parent.resolve()
+
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "config" / "settings.yaml"
 
 

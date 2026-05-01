@@ -51,6 +51,17 @@ copy .env.example .env
 python main.py
 ```
 
+## ビルド（EXE化）
+
+改修したコードをWindows実行ファイル（EXE）として書き出す場合は、以下のコマンドを実行してください。
+
+```bash
+# ビルドスクリプトの実行
+build.bat
+```
+
+ビルドが完了すると、`dist/AI_Trader.exe` が生成されます。実行時は、EXEと同じディレクトリに `config/` フォルダや `.env` ファイルを配置してください。
+
 ## ディレクトリ構造
 
 ```

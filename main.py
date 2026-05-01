@@ -14,8 +14,12 @@ import threading
 from pathlib import Path
 from datetime import datetime
 
-# プロジェクトルートをパスに追加
-PROJECT_ROOT = Path(__file__).parent.resolve()
+# プロジェクトルートをパスに追加（EXE化に対応）
+if getattr(sys, 'frozen', False):
+    PROJECT_ROOT = Path(sys.executable).parent.resolve()
+else:
+    PROJECT_ROOT = Path(__file__).parent.resolve()
+
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from config.config_loader import get_config
